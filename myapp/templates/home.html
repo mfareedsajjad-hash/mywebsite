@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Markaz Style Store</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+</head>
+
+<body class="bg-gray-100 text-gray-800 min-h-screen font-sans">
+
+    <!-- Header -->
+    <header class="bg-emerald-600 text-white sticky top-0 z-40 shadow-md">
+        <div class="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between gap-4">
+            <a href="/" class="flex items-center gap-2">
+                <span class="text-2xl font-black bg-white text-emerald-600 px-2 py-0.5 rounded-lg">M</span>
+                <span class="font-bold text-xl">Markaz Store</span>
+            </a>
+            <form action="/" method="GET" class="flex-1 max-w-xl mx-2">
+                <input type="text" name="search" value="{{ query }}" placeholder="Search products..."
+                    class="w-full pl-4 pr-4 py-1.5 rounded-full text-gray-800 text-sm focus:outline-none">
+            </form>
+            <a href="/cart/" class="flex items-center gap-1 hover:text-emerald-100">
+                <i class="fa-solid fa-cart-shopping text-xl"></i>
+            </a>
+        </div>
+    </header>
+
+    <!-- Product Grid -->
+    <main class="max-w-7xl mx-auto px-4 py-6">
+        <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
+            {% for product in products %}
+            <div
+                class="bg-white rounded-xl shadow border border-gray-200 overflow-hidden flex flex-col justify-between">
+                <div>
+                    <div class="h-40 bg-gray-100 relative overflow-hidden">
+                        {% if product.image %}
+                        <img src="{{ product.image.url }}" class="w-full h-full object-cover">
+                        {% else %}
+                        <img src="https://picsum.photos/seed/{{ product.id }}/300/300"
+                            class="w-full h-full object-cover">
+                        {% endif %}
+                    </div>
+                    <div class="p-3">
+                        <h4 class="font-semibold text-gray-800 text-xs sm:text-sm truncate">{{ product.name }}</h4>
+                        <p class="text-xs text-emerald-600 font-bold mt-1">Wholesale: Rs. {{ product.price }}</p>
+                    </div>
+                </div>
+
+                <div class="p-3 pt-0 grid grid-cols-2 gap-2">
+                    <button
+                        onclick="openModal('{{ product.id }}', '{{ product.name|escapejs }}', '{{ product.price }}', '{{ product.description|escapejs }}')"
+                        class="bg-green-500 hover:bg-green-600 text-white text-xs py-1.5 rounded-lg font-medium flex items-center justify-center gap-1">
+                        <i class="fa-brands fa-whatsapp"></i> Share
+                    </button>
+                    <button
+                        onclick="openModal('{{ product.id }}', '{{ product.name|escapejs }}', '{{ product.price }}', '', 'order')"
+                        class="bg-emerald-600 hover:bg-emerald-700 text-white text-xs py-1.5 rounded-lg font-medium">
+                        Order
+                    </button>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </main>
+
+    <!-- PROFIT MARGIN MODAL -->
+    <div id="marginModal" class="fixed inset-0 bg-black/60 z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl max-w-sm w-full p-5 shadow-2xl relative">
+            <button onclick="closeModal()" class="absolute top-3 right-3 text-gray-400 hover:text-gray-600">
+                <i class="fa-solid fa-xmark text-lg"></i>
+            </button>
+            <h3 class="text-lg font-bold text-gray-800 mb-1" id="modalTitle">Set Your Profit Margin</h3>
+            <p class="text-xs text-gray-500 mb-4">Apna profit add karke final price set karein.</p>
+
+            <form id="modalForm" method="POST" action="">
+                {% csrf_token %}
+                <div class="space-y-3">
+                    <div class="bg-gray-50 p-2.5 rounded-lg text-xs space-y-1">
+                        <div class="flex justify-between">
+                            <span class="text-gray-500">Wholesale Price:</span>
+                            <span class="font-bold text-gray-700">Rs. <span id="modalWholesale">0</span></span>
+                        </div>
+                        <div class="flex justify-between text-emerald-600 font-bold">
+                            <span>Your Profit:</span>
+                            <span>Rs. <span id="modalProfitText">0</span></span>
+                        </div>
+                        <hr>
+                        <div class="flex justify-between text-sm font-extrabold text-gray-900">
+                            <span>Customer Price:</span>
+                            <span>Rs. <span id="modalFinalPrice">0</span></span>
+                        </div>
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-bold text-gray-700 mb-1">Enter Profit Margin (Rs.)</label>
+                        <input type="number" id="marginInput" name="margin" value="200" min="0"
+                            oninput="calculatePrice()"
+                            class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500">
+                    </div>
+
+                    <div id="modalActionArea">
+                        <!-- Dynamic Buttons inserted by JS -->
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        let currentPrice = 0;
+        let currentDesc = '';
+        let currentTitle = '';
+
+        function openModal(id, title, price, desc, mode = 'share') {
+            currentPrice = parseFloat(price);
+            currentDesc = desc;
+            currentTitle = title;
+
+            document.getElementById('modalTitle').innerText = mode === 'order' ? 'Set Profit For Order' : 'Set Profit For WhatsApp Share';
+            document.getElementById('modalWholesale').innerText = currentPrice;
+            document.getElementById('marginInput').value = 200;
+            document.getElementById('marginModal').classList.remove('hidden');
+
+            const actionArea = document.getElementById('modalActionArea');
+            if (mode === 'order') {
+                document.getElementById('modalForm').action = '/add-to-cart/' + id + '/';
+                actionArea.innerHTML = `<button type="submit" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2.5 rounded-lg text-xs transition">Add To Cart With Profit</button>`;
+            } else {
+                actionArea.innerHTML = `<button type="button" onclick="shareToWhatsApp()" class="w-full bg-green-500 hover:bg-green-600 text-white font-bold py-2.5 rounded-lg text-xs transition flex items-center justify-center gap-2"><i class="fa-brands fa-whatsapp text-sm"></i> Share On WhatsApp</button>`;
+            }
+            calculatePrice();
+        }
+
+        function closeModal() {
+            document.getElementById('marginModal').classList.add('hidden');
+        }
+
+        function calculatePrice() {
+            const margin = parseFloat(document.getElementById('marginInput').value) || 0;
+            document.getElementById('modalProfitText').innerText = margin;
+            document.getElementById('modalFinalPrice').innerText = currentPrice + margin;
+        }
+
+        function shareToWhatsApp() {
+            const margin = parseFloat(document.getElementById('marginInput').value) || 0;
+            const finalPrice = currentPrice + margin;
+            const text = `*Product:* ${currentTitle}\n*Price:* Rs. ${finalPrice}\n*Details:* ${currentDesc}\n\n*Order Now! Free Cash on Delivery Available.*`;
+            window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent(text)}`, '_blank');
+            closeModal();
+        }
+    </script>
+</body>
+
+</html>

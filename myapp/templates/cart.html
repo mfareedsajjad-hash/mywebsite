@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cart & Checkout - Markaz Store</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+</head>
+
+<body class="bg-gray-900 text-gray-100 min-h-screen font-sans">
+
+    <nav class="bg-gray-800 border-b border-gray-700 sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 h-16 flex items-center justify-between">
+            <a href="/" class="text-xl font-bold text-emerald-400">Markaz Store</a>
+            <a href="/" class="text-gray-300 text-sm">← Back to Store</a>
+        </div>
+    </nav>
+
+    <main class="max-w-7xl mx-auto px-4 py-8">
+        <h1 class="text-2xl font-extrabold text-white mb-6">Cart & Customer Details</h1>
+
+        {% if cart_items %}
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+
+            <!-- Left: Cart Items Breakdown -->
+            <div class="lg:col-span-2 space-y-4">
+                <div class="bg-gray-800 rounded-xl border border-gray-700 overflow-hidden p-4">
+                    <h3 class="text-lg font-bold text-emerald-400 mb-3">Ordered Items</h3>
+                    <div class="space-y-3">
+                        {% for item in cart_items %}
+                        <div class="flex items-center justify-between bg-gray-700/40 p-3 rounded-lg">
+                            <div>
+                                <h4 class="font-semibold text-white text-sm">{{ item.product.name }}</h4>
+                                <p class="text-xs text-gray-400">Wholesale: Rs. {{ item.wholesale_price }} | Your
+                                    Margin: <span class="text-emerald-400 font-bold">Rs. {{ item.margin }}</span></p>
+                            </div>
+                            <div class="text-right">
+                                <span class="text-sm font-bold text-white block">Rs. {{ item.final_item_price }}</span>
+                                <a href="/remove-from-cart/{{ item.product.id }}/"
+                                    class="text-xs text-red-400 hover:underline">Remove</a>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+
+                <!-- Reseller Earning Summary Card -->
+                <div
+                    class="bg-emerald-950/40 border border-emerald-500/30 rounded-xl p-4 flex justify-between items-center text-sm">
+                    <div>
+                        <span class="text-gray-300 block text-xs">Total Reseller Profit (Apka Nafe)</span>
+                        <span class="text-lg font-black text-emerald-400">Rs. {{ total_reseller_profit }}</span>
+                    </div>
+                    <div class="text-right">
+                        <span class="text-gray-300 block text-xs">Customer Bill</span>
+                        <span class="text-lg font-black text-white">Rs. {{ grand_total }}</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right: Customer Cash on Delivery Checkout Form -->
+            <div class="bg-gray-800 rounded-xl border border-gray-700 p-6 h-fit">
+                <h3 class="text-lg font-bold text-white mb-4 border-b border-gray-700 pb-2">Customer Shipping Details
+                </h3>
+
+                <form action="/place-order/" method="POST" class="space-y-4 text-xs">
+                    {% csrf_token %}
+                    <div>
+                        <label class="block text-gray-300 font-medium mb-1">Customer Full Name</label>
+                        <input type="text" name="name" required placeholder="e.g. Ali Raza"
+                            class="w-full bg-gray-700 border border-gray-600 rounded-lg p-2.5 text-white focus:outline-none focus:border-emerald-500">
+                    </div>
+                    <div>
+                        <label class="block text-gray-300 font-medium mb-1">Phone Number (WhatsApp)</label>
+                        <input type="tel" name="phone" required placeholder="03001234567"
+                            class="w-full bg-gray-700 border border-gray-600 rounded-lg p-2.5 text-white focus:outline-none focus:border-emerald-500">
+                    </div>
+                    <div>
+                        <label class="block text-gray-300 font-medium mb-1">City</label>
+                        <input type="text" name="city" required placeholder="Lahore, Karachi, etc."
+                            class="w-full bg-gray-700 border border-gray-600 rounded-lg p-2.5 text-white focus:outline-none focus:border-emerald-500">
+                    </div>
+                    <div>
+                        <label class="block text-gray-300 font-medium mb-1">Complete Delivery Address</label>
+                        <textarea name="address" required rows="2" placeholder="House/Street/Area info"
+                            class="w-full bg-gray-700 border border-gray-600 rounded-lg p-2.5 text-white focus:outline-none focus:border-emerald-500"></textarea>
+                    </div>
+
+                    <button type="submit"
+                        class="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-3 rounded-xl transition mt-2 text-sm shadow-lg">
+                        Confirm Cash on Delivery Order
+                    </button>
+                </form>
+            </div>
+
+        </div>
+        {% else %}
+        <div class="bg-gray-800 border border-gray-700 rounded-2xl p-12 text-center max-w-lg mx-auto">
+            <h2 class="text-xl font-bold text-white mb-2">Cart Khali Hai</h2>
+            <a href="/"
+                class="inline-block mt-4 bg-emerald-600 text-white px-5 py-2 rounded-xl text-xs font-medium">Start
+                Shopping</a>
+        </div>
+        {% endif %}
+    </main>
+
+</body>
+
+</html>
