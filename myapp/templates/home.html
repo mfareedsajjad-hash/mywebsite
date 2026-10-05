@@ -11,6 +11,16 @@
 
 <body class="bg-gray-100 text-gray-800 min-h-screen font-sans">
 
+    {% if messages %}
+    <div class="fixed top-20 right-4 z-50 space-y-2">
+        {% for message in messages %}
+        <div class="bg-{% if message.tags == 'error' %}red{% else %}emerald{% endif %}-500 text-white px-4 py-3 rounded-lg shadow-lg text-sm">
+            <i class="fa-solid fa-{% if message.tags == 'error' %}circle-exclamation{% else %}circle-check{% endif %} mr-2"></i>{{ message }}
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+
     <!-- Header -->
     <header class="bg-emerald-600 text-white sticky top-0 z-40 shadow-md">
         <div class="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between gap-4">
@@ -28,9 +38,28 @@
                 <input type="text" name="search" value="{{ query }}" placeholder="Search products..."
                     class="flex-1 pl-4 pr-4 py-1.5 rounded-full text-gray-800 text-sm focus:outline-none">
             </form>
-            <a href="/cart/" class="flex items-center gap-1 hover:text-emerald-100">
-                <i class="fa-solid fa-cart-shopping text-xl"></i>
-            </a>
+            <div class="flex items-center gap-3">
+                <a href="/orders/" class="flex items-center gap-1 hover:text-emerald-100 text-sm">
+                    <i class="fa-solid fa-list"></i>
+                </a>
+                <a href="/cart/" class="flex items-center gap-1 hover:text-emerald-100 relative">
+                    <i class="fa-solid fa-cart-shopping text-xl"></i>
+                    {% if cart_count > 0 %}
+                    <span class="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center font-bold">{{ cart_count }}</span>
+                    {% endif %}
+                </a>
+                {% if user.is_authenticated %}
+                <div class="flex items-center gap-2 ml-2">
+                    <span class="text-sm text-gray-200">{{ user.username }}</span>
+                    <a href="/logout/" class="text-xs bg-red-500 hover:bg-red-600 px-2 py-1 rounded text-white">Logout</a>
+                </div>
+                {% else %}
+                <div class="flex items-center gap-2 ml-2">
+                    <a href="/login/" class="text-xs bg-emerald-500 hover:bg-emerald-600 px-2 py-1 rounded text-white">Login</a>
+                    <a href="/register/" class="text-xs bg-gray-600 hover:bg-gray-500 px-2 py-1 rounded text-white">Register</a>
+                </div>
+                {% endif %}
+            </div>
         </div>
     </header>
 

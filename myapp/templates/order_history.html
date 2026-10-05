@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Order History - Markaz Store</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+</head>
+
+<body class="bg-gray-900 text-gray-100 min-h-screen font-sans">
+
+    <nav class="bg-gray-800 border-b border-gray-700 sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 h-16 flex items-center justify-between">
+            <a href="/" class="text-xl font-bold text-emerald-400">Markaz Store</a>
+            <div class="flex items-center gap-4">
+                <a href="/" class="text-gray-300 text-sm">← Back to Store</a>
+                <a href="/cart/" class="text-gray-300 text-sm">Cart</a>
+                {% if user.is_authenticated %}
+                <div class="flex items-center gap-2 ml-2">
+                    <span class="text-sm text-gray-200">{{ user.username }}</span>
+                    <a href="/logout/" class="text-xs bg-red-500 hover:bg-red-600 px-2 py-1 rounded text-white">Logout</a>
+                </div>
+                {% else %}
+                <div class="flex items-center gap-2 ml-2">
+                    <a href="/login/" class="text-xs bg-emerald-500 hover:bg-emerald-600 px-2 py-1 rounded text-white">Login</a>
+                    <a href="/register/" class="text-xs bg-gray-600 hover:bg-gray-500 px-2 py-1 rounded text-white">Register</a>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </nav>
+
+    <main class="max-w-7xl mx-auto px-4 py-8">
+        <h1 class="text-2xl font-extrabold text-white mb-6">Order Tracking</h1>
+
+        <!-- Filters -->
+        <div class="bg-gray-800 rounded-xl border border-gray-700 p-4 mb-6">
+            <form action="/orders/" method="GET" class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                <div>
+                    <label class="block text-gray-300 text-xs font-medium mb-1">Order Status</label>
+                    <select name="status" class="w-full bg-gray-700 border border-gray-600 rounded-lg p-2 text-white text-sm focus:outline-none focus:border-emerald-500">
+                        <option value="">All Statuses</option>
+                        <option value="Pending" {% if status_filter == 'Pending' %}selected{% endif %}>Pending</option>
+                        <option value="Shipped" {% if status_filter == 'Shipped' %}selected{% endif %}>Shipped</option>
+                        <option value="Delivered" {% if status_filter == 'Delivered' %}selected{% endif %}>Delivered</option>
+                        <option value="Cancelled" {% if status_filter == 'Cancelled' %}selected{% endif %}>Cancelled</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-gray-300 text-xs font-medium mb-1">From Date</label>
+                    <input type="date" name="date_from" value="{{ date_from }}"
+                        class="w-full bg-gray-700 border border-gray-600 rounded-lg p-2 text-white text-sm focus:outline-none focus:border-emerald-500">
+                </div>
+                <div>
+                    <label class="block text-gray-300 text-xs font-medium mb-1">To Date</label>
+                    <input type="date" name="date_to" value="{{ date_to }}"
+                        class="w-full bg-gray-700 border border-gray-600 rounded-lg p-2 text-white text-sm focus:outline-none focus:border-emerald-500">
+                </div>
+                <div class="flex items-end">
+                    <button type="submit"
+                        class="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-2 rounded-lg text-sm transition">
+                        <i class="fa-solid fa-filter mr-1"></i> Filter
+                    </button>
+                </div>
+            </form>
+            {% if status_filter or date_from or date_to %}
+            <a href="/orders/" class="inline-block mt-3 text-xs text-gray-400 hover:text-white">
+                <i class="fa-solid fa-times mr-1"></i> Clear Filters
+            </a>
+            {% endif %}
+        </div>
+
+        <!-- Stats Summary -->
+        {% if orders %}
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+            <div class="bg-gray-800 rounded-xl border border-gray-700 p-4">
+                <p class="text-gray-400 text-xs">Total Orders</p>
+                <p class="text-2xl font-bold text-white">{{ orders|length }}</p>
+            </div>
+            <div class="bg-gray-800 rounded-xl border border-gray-700 p-4">
+                <p class="text-gray-400 text-xs">Total Spent</p>
+                <p class="text-2xl font-bold text-emerald-400">Rs. {{ total_amount }}</p>
+            </div>
+            <div class="bg-gray-800 rounded-xl border border-gray-700 p-4">
+                <p class="text-gray-400 text-xs">Total Profit</p>
+                <p class="text-2xl font-bold text-emerald-400">Rs. {{ total_profit }}</p>
+            </div>
+            <div class="bg-gray-800 rounded-xl border border-gray-700 p-4">
+                <p class="text-gray-400 text-xs">Pending</p>
+                <p class="text-2xl font-bold text-yellow-400">{{ pending_count }}</p>
+            </div>
+        </div>
+        {% endif %}
+
+        {% if orders %}
+        <div class="space-y-4">
+            {% for order in orders %}
+            <div class="bg-gray-800 rounded-xl border border-gray-700 overflow-hidden">
+                <div class="p-4 border-b border-gray-700 flex justify-between items-start">
+                    <div>
+                        <h3 class="font-bold text-white text-lg">Order #{{ order.id }}</h3>
+                        <p class="text-xs text-gray-400 mt-1">
+                            <i class="fa-solid fa-user mr-1"></i> {{ order.customer_name }}
+                            <span class="mx-2">|</span>
+                            <i class="fa-solid fa-phone mr-1"></i> {{ order.customer_phone }}
+                        </p>
+                        <p class="text-xs text-gray-400 mt-1">
+                            <i class="fa-solid fa-location-dot mr-1"></i> {{ order.city }}
+                        </p>
+                    </div>
+                    <div class="text-right">
+                        <span class="inline-block px-2 py-1 rounded text-xs font-bold
+                            {% if order.status == 'Pending' %}bg-yellow-500/20 text-yellow-400
+                            {% elif order.status == 'Shipped' %}bg-blue-500/20 text-blue-400
+                            {% elif order.status == 'Delivered' %}bg-emerald-500/20 text-emerald-400
+                            {% else %}bg-red-500/20 text-red-400{% endif %}">
+                            {{ order.status }}
+                        </span>
+                        <p class="text-xs text-gray-400 mt-1">{{ order.created_at|date:"M d, Y H:i" }}</p>
+                    </div>
+                </div>
+
+                <div class="p-4 bg-gray-700/30">
+                    <h4 class="text-sm font-bold text-emerald-400 mb-2">Order Items</h4>
+                    <div class="space-y-2">
+                        {% for item in order.items.all %}
+                        <div class="flex justify-between items-center text-xs">
+                            <div class="flex items-center gap-2">
+                                {% if item.product.image %}
+                                <img src="{{ item.product.image.url }}" class="w-10 h-10 object-cover rounded">
+                                {% else %}
+                                <img src="https://picsum.photos/seed/{{ item.product.id }}/50/50"
+                                    class="w-10 h-10 object-cover rounded">
+                                {% endif %}
+                                <div>
+                                    <span class="text-white font-medium">{{ item.product.name }}</span>
+                                    <span class="text-gray-400">x {{ item.quantity }}</span>
+                                </div>
+                            </div>
+                            <span class="text-white">Rs. {{ item.wholesale_price * item.quantity + item.margin * item.quantity }}</span>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+
+                <div class="p-4 bg-gray-700/50 flex justify-between items-center text-sm">
+                    <div>
+                        <span class="text-gray-400 text-xs">Total Profit:</span>
+                        <span class="text-emerald-400 font-bold ml-2">Rs. {{ order.total_profit }}</span>
+                    </div>
+                    <div class="flex items-center gap-4">
+                        <div>
+                            <span class="text-gray-400 text-xs">Grand Total:</span>
+                            <span class="text-white font-bold ml-2">Rs. {{ order.total_amount }}</span>
+                        </div>
+                        <a href="/orders/{{ order.id }}/"
+                            class="bg-emerald-600 hover:bg-emerald-500 text-white px-3 py-1.5 rounded-lg text-xs font-medium transition">
+                            View Details
+                        </a>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="bg-gray-800 border border-gray-700 rounded-2xl p-12 text-center max-w-lg mx-auto">
+            <i class="fa-solid fa-box-open text-4xl text-gray-600 mb-4"></i>
+            <h2 class="text-xl font-bold text-white mb-2">No Orders Yet</h2>
+            <p class="text-gray-400 text-sm mb-4">You haven't placed any orders yet.</p>
+            <a href="/"
+                class="inline-block bg-emerald-600 text-white px-5 py-2 rounded-xl text-xs font-medium">Start
+                Shopping</a>
+        </div>
+        {% endif %}
+    </main>
+
+</body>
+
+</html>

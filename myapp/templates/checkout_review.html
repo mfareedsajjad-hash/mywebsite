@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Review Order - Markaz Store</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+</head>
+
+<body class="bg-gray-900 text-gray-100 min-h-screen font-sans">
+
+    <nav class="bg-gray-800 border-b border-gray-700 sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 h-16 flex items-center justify-between">
+            <a href="/" class="text-xl font-bold text-emerald-400">Markaz Store</a>
+            <div class="flex items-center gap-4">
+                <a href="/cart/" class="text-gray-300 text-sm">← Back to Cart</a>
+                {% if user.is_authenticated %}
+                <div class="flex items-center gap-2 ml-2">
+                    <span class="text-sm text-gray-200">{{ user.username }}</span>
+                    <a href="/logout/" class="text-xs bg-red-500 hover:bg-red-600 px-2 py-1 rounded text-white">Logout</a>
+                </div>
+                {% else %}
+                <div class="flex items-center gap-2 ml-2">
+                    <a href="/login/" class="text-xs bg-emerald-500 hover:bg-emerald-600 px-2 py-1 rounded text-white">Login</a>
+                    <a href="/register/" class="text-xs bg-gray-600 hover:bg-gray-500 px-2 py-1 rounded text-white">Register</a>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </nav>
+
+    <main class="max-w-7xl mx-auto px-4 py-8">
+        <h1 class="text-2xl font-extrabold text-white mb-6">Review Your Order</h1>
+
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <!-- Left: Order Details -->
+            <div class="lg:col-span-2 space-y-6">
+                <!-- Customer Information -->
+                <div class="bg-gray-800 rounded-xl border border-gray-700 p-6">
+                    <h3 class="text-lg font-bold text-white mb-4 border-b border-gray-700 pb-2">Shipping Information</h3>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+                        <div>
+                            <p class="text-gray-400 text-xs">Name</p>
+                            <p class="text-white font-medium">{{ customer_name }}</p>
+                        </div>
+                        <div>
+                            <p class="text-gray-400 text-xs">Phone</p>
+                            <p class="text-white font-medium">{{ customer_phone }}</p>
+                        </div>
+                        <div>
+                            <p class="text-gray-400 text-xs">City</p>
+                            <p class="text-white font-medium">{{ city }}</p>
+                        </div>
+                        <div>
+                            <p class="text-gray-400 text-xs">Address</p>
+                            <p class="text-white font-medium">{{ address }}</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Order Items -->
+                <div class="bg-gray-800 rounded-xl border border-gray-700 overflow-hidden">
+                    <div class="p-4 border-b border-gray-700">
+                        <h3 class="text-lg font-bold text-white">Order Items</h3>
+                    </div>
+                    <div class="divide-y divide-gray-700">
+                        {% for item in cart_items %}
+                        <div class="p-4 flex items-center justify-between">
+                            <div class="flex items-center gap-4">
+                                {% if item.product.image %}
+                                <img src="{{ item.product.image.url }}" class="w-16 h-16 object-cover rounded-lg">
+                                {% else %}
+                                <img src="https://picsum.photos/seed/{{ item.product.id }}/100/100"
+                                    class="w-16 h-16 object-cover rounded-lg">
+                                {% endif %}
+                                <div>
+                                    <h4 class="font-semibold text-white">{{ item.product.name }}</h4>
+                                    <p class="text-xs text-gray-400">Quantity: {{ item.quantity }}</p>
+                                    <p class="text-xs text-gray-400">Wholesale: Rs. {{ item.wholesale_price }}</p>
+                                    <p class="text-xs text-emerald-400">Your Margin: Rs. {{ item.margin }}</p>
+                                </div>
+                            </div>
+                            <div class="text-right">
+                                <p class="text-white font-bold">Rs. {{ item.final_item_price }}</p>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right: Order Summary -->
+            <div class="space-y-6">
+                <div class="bg-gray-800 rounded-xl border border-gray-700 p-6 sticky top-24">
+                    <h3 class="text-lg font-bold text-white mb-4">Order Summary</h3>
+                    <div class="space-y-3 text-sm">
+                        <div class="flex justify-between">
+                            <span class="text-gray-400">Total Items</span>
+                            <span class="text-white">{{ cart_items|length }}</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span class="text-gray-400">Total Wholesale</span>
+                            <span class="text-white">Rs. {{ total_wholesale }}</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span class="text-gray-400">Your Profit</span>
+                            <span class="text-emerald-400 font-bold">Rs. {{ total_reseller_profit }}</span>
+                        </div>
+                        <hr class="border-gray-700">
+                        <div class="flex justify-between text-lg">
+                            <span class="text-white font-bold">Grand Total</span>
+                            <span class="text-emerald-400 font-bold">Rs. {{ grand_total }}</span>
+                        </div>
+                    </div>
+
+                    <div class="mt-6 pt-6 border-t border-gray-700 space-y-3">
+                        <form action="/place-order/" method="POST" class="space-y-3">
+                            {% csrf_token %}
+                            <input type="hidden" name="name" value="{{ customer_name }}">
+                            <input type="hidden" name="phone" value="{{ customer_phone }}">
+                            <input type="hidden" name="city" value="{{ city }}">
+                            <input type="hidden" name="address" value="{{ address }}">
+                            <input type="hidden" name="confirm" value="true">
+                            
+                            <button type="submit"
+                                class="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-3 rounded-xl transition text-sm shadow-lg">
+                                <i class="fa-solid fa-check mr-2"></i>Confirm Order
+                            </button>
+                        </form>
+                        
+                        <a href="/cart/"
+                            class="block w-full bg-gray-700 hover:bg-gray-600 text-white font-bold py-3 rounded-xl text-center transition text-sm">
+                            <i class="fa-solid fa-arrow-left mr-2"></i>Back to Cart
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+</body>
+
+</html>
