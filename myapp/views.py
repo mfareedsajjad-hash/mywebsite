@@ -7,13 +7,17 @@ from .models import Product, Category, Order, OrderItem
 
 def home_store(request):
     query = request.GET.get('search', '').strip()
+    category_id = request.GET.get('category', '')
     products = Product.objects.select_related('category').order_by('-id')
     if query:
         products = products.filter(Q(name__icontains=query) | Q(description__icontains=query))
+    if category_id:
+        products = products.filter(category_id=category_id)
     return render(request, 'home.html', {
         'products': products,
         'categories': Category.objects.all(),
         'query': query,
+        'category_id': category_id,
     })
 
 

@@ -18,9 +18,15 @@
                 <span class="text-2xl font-black bg-white text-emerald-600 px-2 py-0.5 rounded-lg">M</span>
                 <span class="font-bold text-xl">Markaz Store</span>
             </a>
-            <form action="/" method="GET" class="flex-1 max-w-xl mx-2">
+            <form action="/" method="GET" class="flex-1 max-w-xl mx-2 flex gap-2">
+                <select name="category" class="px-3 py-1.5 rounded-full text-gray-800 text-sm focus:outline-none">
+                    <option value="">All Categories</option>
+                    {% for category in categories %}
+                    <option value="{{ category.id }}" {% if category_id == category.id %}selected{% endif %}>{{ category.name }}</option>
+                    {% endfor %}
+                </select>
                 <input type="text" name="search" value="{{ query }}" placeholder="Search products..."
-                    class="w-full pl-4 pr-4 py-1.5 rounded-full text-gray-800 text-sm focus:outline-none">
+                    class="flex-1 pl-4 pr-4 py-1.5 rounded-full text-gray-800 text-sm focus:outline-none">
             </form>
             <a href="/cart/" class="flex items-center gap-1 hover:text-emerald-100">
                 <i class="fa-solid fa-cart-shopping text-xl"></i>
