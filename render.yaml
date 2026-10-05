@@ -1,0 +1,24 @@
+services:
+  - type: web
+    name: markaz-store
+    env: python
+    buildCommand: pip install -r requirements.txt && python manage.py collectstatic --noinput
+    startCommand: gunicorn mywebsite.wsgi:application
+    envVars:
+      - key: DJANGO_SETTINGS_MODULE
+        value: mywebsite.settings
+      - key: SECRET_KEY
+        generateValue: true
+      - key: DEBUG
+        value: False
+      - key: DJANGO_ALLOWED_HOSTS
+        value: .onrender.com
+      - key: DATABASE_URL
+        fromDatabase:
+          name: markaz-db
+          property: connectionString
+
+databases:
+  - name: markaz-db
+    databaseName: markaz_store
+    user: markaz_user
