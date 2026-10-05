@@ -60,6 +60,56 @@
                     </div>
                 </div>
 
+                <!-- Payment Information -->
+                <div class="bg-gray-800 rounded-xl border border-gray-700 p-6">
+                    <h3 class="text-lg font-bold text-white mb-4 border-b border-gray-700 pb-2">Payment Information</h3>
+                    <div class="space-y-3 text-sm">
+                        <div class="flex justify-between items-center">
+                            <span class="text-gray-400">Payment Method</span>
+                            <span class="text-white font-medium">
+                                {% if payment_method == 'COD' %}Cash on Delivery
+                                {% elif payment_method == 'JazzCash' %}JazzCash
+                                {% elif payment_method == 'EasyPaisa' %}EasyPaisa
+                                {% elif payment_method == 'BankTransfer' %}Bank Transfer
+                                {% else %}{{ payment_method }}{% endif %}
+                            </span>
+                        </div>
+                        {% if payment_method != 'COD' %}
+                        <div class="bg-yellow-500/20 border border-yellow-500/50 p-3 rounded-lg">
+                            <p class="text-yellow-400 text-xs mb-2">
+                                <i class="fa-solid fa-exclamation-triangle mr-1"></i>
+                                Please complete payment before confirming
+                            </p>
+                            <div class="text-xs text-gray-300 mb-2">
+                                {% if payment_method == 'JazzCash' %}
+                                <p><strong>JazzCash Account:</strong> 0300-1234567</p>
+                                <p><strong>Account Name:</strong> Markaz Store</p>
+                                {% elif payment_method == 'EasyPaisa' %}
+                                <p><strong>EasyPaisa Account:</strong> 0345-1234567</p>
+                                <p><strong>Account Name:</strong> Markaz Store</p>
+                                {% elif payment_method == 'BankTransfer' %}
+                                <p><strong>Bank:</strong> HBL</p>
+                                <p><strong>Account Number:</strong> 1234-5678-9012</p>
+                                <p><strong>Account Title:</strong> Markaz Store</p>
+                                {% endif %}
+                            </div>
+                            <div>
+                                <label class="block text-gray-300 text-xs mb-1">Transaction ID</label>
+                                <input type="text" id="transactionId" placeholder="Enter transaction ID"
+                                    class="w-full bg-gray-700 border border-gray-600 rounded-lg p-2 text-white text-sm focus:outline-none focus:border-emerald-500">
+                            </div>
+                        </div>
+                        {% else %}
+                        <div class="bg-emerald-500/20 border border-emerald-500/50 p-3 rounded-lg">
+                            <p class="text-emerald-400 text-xs">
+                                <i class="fa-solid fa-truck mr-1"></i>
+                                Cash on Delivery - No payment required now
+                            </p>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+
                 <!-- Order Items -->
                 <div class="bg-gray-800 rounded-xl border border-gray-700 overflow-hidden">
                     <div class="p-4 border-b border-gray-700">
@@ -122,9 +172,11 @@
                             <input type="hidden" name="phone" value="{{ customer_phone }}">
                             <input type="hidden" name="city" value="{{ city }}">
                             <input type="hidden" name="address" value="{{ address }}">
+                            <input type="hidden" name="payment_method" value="{{ payment_method }}">
+                            <input type="hidden" name="transaction_id" id="transactionIdHidden" value="">
                             <input type="hidden" name="confirm" value="true">
                             
-                            <button type="submit"
+                            <button type="submit" id="confirmOrderBtn"
                                 class="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-3 rounded-xl transition text-sm shadow-lg">
                                 <i class="fa-solid fa-check mr-2"></i>Confirm Order
                             </button>
@@ -139,6 +191,14 @@
             </div>
         </div>
     </main>
+
+    <script>
+        // Copy transaction ID to hidden field before submission
+        document.getElementById('confirmOrderBtn').addEventListener('click', function() {
+            const transactionId = document.getElementById('transactionId').value;
+            document.getElementById('transactionIdHidden').value = transactionId;
+        });
+    </script>
 
 </body>
 

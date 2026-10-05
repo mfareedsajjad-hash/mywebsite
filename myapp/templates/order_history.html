@@ -19,6 +19,7 @@
                 <a href="/cart/" class="text-gray-300 text-sm">Cart</a>
                 {% if user.is_authenticated %}
                 <div class="flex items-center gap-2 ml-2">
+                    <a href="/profile/" class="text-xs bg-gray-600 hover:bg-gray-500 px-2 py-1 rounded text-white">Profile</a>
                     <span class="text-sm text-gray-200">{{ user.username }}</span>
                     <a href="/logout/" class="text-xs bg-red-500 hover:bg-red-600 px-2 py-1 rounded text-white">Logout</a>
                 </div>
@@ -119,6 +120,17 @@
                             {{ order.status }}
                         </span>
                         <p class="text-xs text-gray-400 mt-1">{{ order.created_at|date:"M d, Y H:i" }}</p>
+                        <p class="text-xs text-gray-400 mt-1">
+                            {% if order.payment_method == 'COD' %}Cash on Delivery
+                            {% elif order.payment_method == 'JazzCash' %}JazzCash
+                            {% elif order.payment_method == 'EasyPaisa' %}EasyPaisa
+                            {% elif order.payment_method == 'BankTransfer' %}Bank Transfer
+                            {% else %}{{ order.payment_method }}{% endif %}
+                            •
+                            <span class="{% if order.payment_status == 'Paid' %}text-emerald-400{% elif order.payment_status == 'Pending' %}text-yellow-400{% else %}text-red-400{% endif %}">
+                                {{ order.payment_status }}
+                            </span>
+                        </p>
                     </div>
                 </div>
 

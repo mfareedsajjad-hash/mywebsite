@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Profile - Markaz Store</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+</head>
+
+<body class="bg-gray-900 text-gray-100 min-h-screen font-sans">
+
+    {% if messages %}
+    <div class="fixed top-20 right-4 z-50 space-y-2">
+        {% for message in messages %}
+        <div class="bg-{% if message.tags == 'error' %}red{% else %}emerald{% endif %}-500 text-white px-4 py-3 rounded-lg shadow-lg text-sm">
+            <i class="fa-solid fa-{% if message.tags == 'error' %}circle-exclamation{% else %}circle-check{% endif %} mr-2"></i>{{ message }}
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    <nav class="bg-gray-800 border-b border-gray-700 sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 h-16 flex items-center justify-between">
+            <a href="/" class="text-xl font-bold text-emerald-400">Markaz Store</a>
+            <div class="flex items-center gap-4">
+                <a href="/orders/" class="text-gray-300 text-sm">Order History</a>
+                <a href="/" class="text-gray-300 text-sm">← Back to Store</a>
+                <div class="flex items-center gap-2 ml-2">
+                    <span class="text-sm text-gray-200">{{ user.username }}</span>
+                    <a href="/logout/" class="text-xs bg-red-500 hover:bg-red-600 px-2 py-1 rounded text-white">Logout</a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <main class="max-w-4xl mx-auto px-4 py-8">
+        <h1 class="text-3xl font-extrabold text-white mb-8">My Profile</h1>
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <!-- Profile Card -->
+            <div class="md:col-span-1">
+                <div class="bg-gray-800 rounded-xl border border-gray-700 p-6 text-center">
+                    <div class="w-20 h-20 bg-emerald-500/20 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <i class="fa-solid fa-user text-emerald-400 text-3xl"></i>
+                    </div>
+                    <h2 class="text-xl font-bold text-white mb-1">{{ user.username }}</h2>
+                    <p class="text-gray-400 text-sm mb-4">{{ user.email }}</p>
+                    <div class="space-y-2 text-sm">
+                        <div class="flex justify-between">
+                            <span class="text-gray-400">Orders:</span>
+                            <span class="text-white font-bold">{{ user.orders.count }}</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span class="text-gray-400">Member Since:</span>
+                            <span class="text-white">{{ user.date_joined|date:"M Y" }}</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="bg-gray-800 rounded-xl border border-gray-700 p-6 mt-6">
+                    <h3 class="text-lg font-bold text-white mb-4">Quick Links</h3>
+                    <div class="space-y-2">
+                        <a href="/orders/" class="block text-gray-300 hover:text-emerald-400 text-sm py-2">
+                            <i class="fa-solid fa-list mr-2"></i>Order History
+                        </a>
+                        <a href="/cart/" class="block text-gray-300 hover:text-emerald-400 text-sm py-2">
+                            <i class="fa-solid fa-cart-shopping mr-2"></i>My Cart
+                        </a>
+                        <a href="/" class="block text-gray-300 hover:text-emerald-400 text-sm py-2">
+                            <i class="fa-solid fa-store mr-2"></i>Browse Products
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Profile Form -->
+            <div class="md:col-span-2">
+                <div class="bg-gray-800 rounded-xl border border-gray-700 p-6">
+                    <h3 class="text-lg font-bold text-white mb-6 border-b border-gray-700 pb-2">Personal Information</h3>
+                    
+                    <form action="/profile/" method="POST" class="space-y-4">
+                        {% csrf_token %}
+                        
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-gray-300 text-sm font-medium mb-1">Username</label>
+                                <input type="text" value="{{ user.username }}" disabled
+                                    class="w-full bg-gray-700 border border-gray-600 rounded-lg p-2.5 text-gray-400 text-sm cursor-not-allowed">
+                            </div>
+                            <div>
+                                <label class="block text-gray-300 text-sm font-medium mb-1">Email</label>
+                                <input type="email" name="email" value="{{ user.email }}"
+                                    class="w-full bg-gray-700 border border-gray-600 rounded-lg p-2.5 text-white text-sm focus:outline-none focus:border-emerald-500">
+                            </div>
+                        </div>
+
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-gray-300 text-sm font-medium mb-1">First Name</label>
+                                <input type="text" name="first_name" value="{{ user.first_name }}"
+                                    class="w-full bg-gray-700 border border-gray-600 rounded-lg p-2.5 text-white text-sm focus:outline-none focus:border-emerald-500">
+                            </div>
+                            <div>
+                                <label class="block text-gray-300 text-sm font-medium mb-1">Last Name</label>
+                                <input type="text" name="last_name" value="{{ user.last_name }}"
+                                    class="w-full bg-gray-700 border border-gray-600 rounded-lg p-2.5 text-white text-sm focus:outline-none focus:border-emerald-500">
+                            </div>
+                        </div>
+
+                        <h3 class="text-lg font-bold text-white mt-6 mb-4 border-b border-gray-700 pb-2">Default Shipping Details</h3>
+                        <p class="text-gray-400 text-xs mb-4">These details will be pre-filled during checkout</p>
+
+                        <div>
+                            <label class="block text-gray-300 text-sm font-medium mb-1">Phone Number (WhatsApp)</label>
+                            <input type="tel" name="phone" value="{{ profile.phone }}" placeholder="03001234567"
+                                class="w-full bg-gray-700 border border-gray-600 rounded-lg p-2.5 text-white text-sm focus:outline-none focus:border-emerald-500">
+                        </div>
+
+                        <div>
+                            <label class="block text-gray-300 text-sm font-medium mb-1">City</label>
+                            <input type="text" name="city" value="{{ profile.city }}" placeholder="Lahore, Karachi, etc."
+                                class="w-full bg-gray-700 border border-gray-600 rounded-lg p-2.5 text-white text-sm focus:outline-none focus:border-emerald-500">
+                        </div>
+
+                        <div>
+                            <label class="block text-gray-300 text-sm font-medium mb-1">Complete Address</label>
+                            <textarea name="address" rows="3" placeholder="House/Street/Area info"
+                                class="w-full bg-gray-700 border border-gray-600 rounded-lg p-2.5 text-white text-sm focus:outline-none focus:border-emerald-500">{{ profile.address }}</textarea>
+                        </div>
+
+                        <button type="submit"
+                            class="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-3 rounded-xl transition text-sm shadow-lg">
+                            <i class="fa-solid fa-save mr-2"></i>Save Changes
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </main>
+
+</body>
+
+</html>

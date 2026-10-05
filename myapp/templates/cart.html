@@ -29,6 +29,7 @@
                 <a href="/" class="text-gray-300 text-sm">← Back to Store</a>
                 {% if user.is_authenticated %}
                 <div class="flex items-center gap-2 ml-2">
+                    <a href="/profile/" class="text-xs bg-gray-600 hover:bg-gray-500 px-2 py-1 rounded text-white">Profile</a>
                     <span class="text-sm text-gray-200">{{ user.username }}</span>
                     <a href="/logout/" class="text-xs bg-red-500 hover:bg-red-600 px-2 py-1 rounded text-white">Logout</a>
                 </div>
@@ -153,22 +154,43 @@
                         <div>
                             <label class="block text-gray-300 font-medium mb-1">Customer Full Name</label>
                             <input type="text" name="name" required placeholder="e.g. Ali Raza"
+                                value="{% if user.first_name %}{{ user.first_name }}{% if user.last_name %} {{ user.last_name }}{% endif %}{% endif %}"
                                 class="w-full bg-gray-700 border border-gray-600 rounded-lg p-2.5 text-white focus:outline-none focus:border-emerald-500">
                         </div>
                         <div>
                             <label class="block text-gray-300 font-medium mb-1">Phone Number (WhatsApp)</label>
                             <input type="tel" name="phone" required placeholder="03001234567"
+                                value="{% if user_profile and user_profile.phone %}{{ user_profile.phone }}{% endif %}"
                                 class="w-full bg-gray-700 border border-gray-600 rounded-lg p-2.5 text-white focus:outline-none focus:border-emerald-500">
                         </div>
                         <div>
                             <label class="block text-gray-300 font-medium mb-1">City</label>
                             <input type="text" name="city" required placeholder="Lahore, Karachi, etc."
+                                value="{% if user_profile and user_profile.city %}{{ user_profile.city }}{% endif %}"
                                 class="w-full bg-gray-700 border border-gray-600 rounded-lg p-2.5 text-white focus:outline-none focus:border-emerald-500">
                         </div>
                         <div>
                             <label class="block text-gray-300 font-medium mb-1">Complete Delivery Address</label>
                             <textarea name="address" required rows="2" placeholder="House/Street/Area info"
-                                class="w-full bg-gray-700 border border-gray-600 rounded-lg p-2.5 text-white focus:outline-none focus:border-emerald-500"></textarea>
+                                class="w-full bg-gray-700 border border-gray-600 rounded-lg p-2.5 text-white focus:outline-none focus:border-emerald-500">{% if user_profile and user_profile.address %}{{ user_profile.address }}{% endif %}</textarea>
+                        </div>
+
+                        <div>
+                            <label class="block text-gray-300 font-medium mb-1">Payment Method</label>
+                            <select name="payment_method" id="paymentMethod" required
+                                class="w-full bg-gray-700 border border-gray-600 rounded-lg p-2.5 text-white focus:outline-none focus:border-emerald-500">
+                                <option value="COD">Cash on Delivery</option>
+                                <option value="JazzCash">JazzCash</option>
+                                <option value="EasyPaisa">EasyPaisa</option>
+                                <option value="BankTransfer">Bank Transfer</option>
+                            </select>
+                        </div>
+
+                        <div id="paymentInfo" class="hidden bg-gray-700/30 p-3 rounded-lg">
+                            <p class="text-gray-300 text-xs mb-2">
+                                <i class="fa-solid fa-info-circle mr-1"></i>
+                                Payment details will be shown on the next step
+                            </p>
                         </div>
 
                         <button type="submit"
@@ -189,6 +211,17 @@
         </div>
         {% endif %}
     </main>
+
+    <script>
+        document.getElementById('paymentMethod').addEventListener('change', function() {
+            const paymentInfo = document.getElementById('paymentInfo');
+            if (this.value !== 'COD') {
+                paymentInfo.classList.remove('hidden');
+            } else {
+                paymentInfo.classList.add('hidden');
+            }
+        });
+    </script>
 
 </body>
 

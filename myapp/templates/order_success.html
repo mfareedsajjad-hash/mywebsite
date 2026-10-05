@@ -24,6 +24,8 @@
             <div><span class="text-gray-400">Phone:</span> <strong class="text-white">{{ phone }}</strong></div>
             <div><span class="text-gray-400">City:</span> <strong class="text-white">{{ city }}</strong></div>
             <div><span class="text-gray-400">Address:</span> <strong class="text-white">{{ address }}</strong></div>
+            <div><span class="text-gray-400">Payment Method:</span> <strong class="text-white">{{ payment_method }}</strong></div>
+            <div><span class="text-gray-400">Payment Status:</span> <strong class="{% if payment_status == 'Paid' %}text-emerald-400{% else %}text-yellow-400{% endif %}">{{ payment_status }}</strong></div>
         </div>
 
         <div class="flex gap-2">

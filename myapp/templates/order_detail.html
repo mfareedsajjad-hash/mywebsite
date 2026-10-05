@@ -19,6 +19,7 @@
                 <a href="/" class="text-gray-300 text-sm">Store</a>
                 {% if user.is_authenticated %}
                 <div class="flex items-center gap-2 ml-2">
+                    <a href="/profile/" class="text-xs bg-gray-600 hover:bg-gray-500 px-2 py-1 rounded text-white">Profile</a>
                     <span class="text-sm text-gray-200">{{ user.username }}</span>
                     <a href="/logout/" class="text-xs bg-red-500 hover:bg-red-600 px-2 py-1 rounded text-white">Logout</a>
                 </div>
@@ -81,6 +82,39 @@
                             <p class="text-gray-400 text-xs">Address</p>
                             <p class="text-white font-medium">{{ order.address }}</p>
                         </div>
+                    </div>
+                </div>
+
+                <!-- Payment Information -->
+                <div class="bg-gray-800 rounded-xl border border-gray-700 p-6">
+                    <h3 class="text-lg font-bold text-white mb-4">Payment Information</h3>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+                        <div>
+                            <p class="text-gray-400 text-xs">Payment Method</p>
+                            <p class="text-white font-medium">
+                                {% if order.payment_method == 'COD' %}Cash on Delivery
+                                {% elif order.payment_method == 'JazzCash' %}JazzCash
+                                {% elif order.payment_method == 'EasyPaisa' %}EasyPaisa
+                                {% elif order.payment_method == 'BankTransfer' %}Bank Transfer
+                                {% else %}{{ order.payment_method }}{% endif %}
+                            </p>
+                        </div>
+                        <div>
+                            <p class="text-gray-400 text-xs">Payment Status</p>
+                            <span class="inline-block px-2 py-1 rounded text-xs font-bold
+                                {% if order.payment_status == 'Paid' %}bg-emerald-500/20 text-emerald-400
+                                {% elif order.payment_status == 'Pending' %}bg-yellow-500/20 text-yellow-400
+                                {% elif order.payment_status == 'Failed' %}bg-red-500/20 text-red-400
+                                {% else %}bg-gray-500/20 text-gray-400{% endif %}">
+                                {{ order.payment_status }}
+                            </span>
+                        </div>
+                        {% if order.transaction_id %}
+                        <div class="md:col-span-2">
+                            <p class="text-gray-400 text-xs">Transaction ID</p>
+                            <p class="text-white font-medium">{{ order.transaction_id }}</p>
+                        </div>
+                        {% endif %}
                     </div>
                 </div>
 
