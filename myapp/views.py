@@ -9,6 +9,7 @@ from django.contrib import messages
 from django.utils import timezone
 from datetime import timedelta
 import json
+from django.conf import settings
 from .models import Product, Category, Order, OrderItem, UserProfile
 
 
@@ -30,6 +31,7 @@ def home_store(request):
         'query': query,
         'category_id': category_id,
         'cart_count': cart_count,
+        'meta_pixel_id': settings.META_PIXEL_ID,
     })
 
 
@@ -48,6 +50,20 @@ def add_to_cart(request, product_id):
     item['margin'] = str(margin)
     cart[key] = item
     request.session['cart'] = cart
+    
+    # Prepare pixel data for AddToCart event
+    pixel_data = {
+        'content_name': product.name,
+        'content_ids': [str(product.id)],
+        'content_type': 'product',
+        'value': float(product.price + margin),
+        'currency': 'PKR',
+    }
+    
+    # Store pixel data in session to track on cart page
+    request.session['pixel_event'] = 'AddToCart'
+    request.session['pixel_data'] = pixel_data
+    
     return redirect('cart')
 
 
@@ -113,6 +129,10 @@ def cart(request):
     if request.user.is_authenticated:
         user_profile = getattr(request.user, 'profile', None)
     
+    # Get pixel event from session
+    pixel_event = request.session.pop('pixel_event', None)
+    pixel_data = request.session.pop('pixel_data', None)
+    
     return render(request, 'cart.html', {
         'cart_items': cart_items,
         'total_wholesale': total_wholesale,
@@ -121,6 +141,9 @@ def cart(request):
         'error': error,
         'cart_count': cart_count,
         'user_profile': user_profile,
+        'meta_pixel_id': settings.META_PIXEL_ID,
+        'pixel_event': pixel_event,
+        'pixel_data': json.dumps(pixel_data) if pixel_data else None,
     })
 
 
@@ -195,6 +218,15 @@ def place_order(request):
 
             request.session['cart'] = {}
 
+            # Prepare pixel data for Purchase event
+            pixel_data = {
+                'content_ids': [str(item['product'].id) for item in order_items_data],
+                'content_type': 'product',
+                'value': float(grand_total),
+                'currency': 'PKR',
+                'num_items': sum(item['quantity'] for item in order_items_data),
+            }
+
             return render(request, 'order_success.html', {
                 'order_id': order.id,
                 'name': customer_name,
@@ -204,6 +236,9 @@ def place_order(request):
                 'user': request.user,
                 'payment_method': payment_method,
                 'payment_status': payment_status,
+                'pixel_event': 'Purchase',
+                'pixel_data': json.dumps(pixel_data),
+                'meta_pixel_id': settings.META_PIXEL_ID,
             })
         else:
             cart_items = []
@@ -237,6 +272,15 @@ def place_order(request):
                 'city': city,
                 'address': customer_address,
                 'payment_method': payment_method,
+                'pixel_event': 'InitiateCheckout',
+                'pixel_data': json.dumps({
+                    'content_ids': [str(item['product'].id) for item in cart_items],
+                    'content_type': 'product',
+                    'value': float(total_wholesale + total_reseller_profit),
+                    'currency': 'PKR',
+                    'num_items': len(cart_items),
+                }),
+                'meta_pixel_id': settings.META_PIXEL_ID,
             })
     return redirect('cart')
 
